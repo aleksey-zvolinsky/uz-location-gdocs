@@ -1,6 +1,9 @@
 package ua.com.kerriline.location;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Folder;
@@ -25,6 +28,10 @@ import org.springframework.stereotype.Component;
 public class MailManager {
 	
 	private static final Log LOG = LogFactory.getLog(MailManager.class);
+	
+	//TODO move to configuration
+	private String email = "sledline@gmail.com";
+	private String pass = "k5666031";
 
 	public MessageBean getLast1392() {
 		Properties props = new Properties();
@@ -35,7 +42,9 @@ public class MailManager {
 			Session session = Session.getDefaultInstance(props, null);
 
 			Store store = session.getStore("imaps");
-			store.connect("smtp.gmail.com", "sledline@gmail.com", "k5666031");
+			
+			
+			store.connect("smtp.gmail.com", email, pass);
 
 			Folder inbox = store.getFolder("inbox");
 			inbox.open(Folder.READ_ONLY);
@@ -45,12 +54,11 @@ public class MailManager {
 
 			messages = inbox.getMessages();
 			LOG.info("------------------------------");
-			for (int i = 0; i < messageCount; i++) {
+			for (int i = messageCount; i > 0; i--) {
 				LOG.info("Mail Subject:- " + messages[i].getSubject());
 				if(messages[i].getSubject().contains("1392")){
 					LOG.info("Found required mail");
-					textIsHtml = false;
-					bean = new MessageBean(messages[i].getSubject(), getText(messages[i]));
+					bean = new MessageBean(messages[i].getSubject(), getText(messages[i]), messages[i].getReceivedDate());
 					break;
 				}
 			}
@@ -61,8 +69,53 @@ public class MailManager {
 		}		
 		return bean;
 	}
+	
+	
+	public List<MessageBean> getAll1392Messages() {
+		Properties props = new Properties();
+		Message[] messages = null;
+		MessageBean bean = null;
+		
+		List<MessageBean> result = new ArrayList<MessageBean>();
+		try {
+			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("mail.properties"));
+			Session session = Session.getDefaultInstance(props, null);
 
-    private boolean textIsHtml = false;
+			Store store = session.getStore("imaps");
+			
+			
+			store.connect("smtp.gmail.com", email, pass);
+
+			Folder inbox = store.getFolder("inbox");
+			inbox.open(Folder.READ_ONLY);
+			int messageCount = inbox.getMessageCount();
+
+			LOG.info("Total Messages:- " + messageCount);
+			
+			messages = inbox.getMessages();
+			
+			LOG.info("------------------------------");
+			
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.HOUR, -2);
+			
+			for (int i = 0; i < messageCount; i++) {
+				LOG.info("Mail Subject:- " + messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
+				if(messages[i].getSubject().contains("1392") && cal.getTime().before(messages[i].getReceivedDate())){
+					LOG.info("Found required mail");
+
+					bean = new MessageBean(messages[i].getSubject(), getText(messages[i]), messages[i].getReceivedDate());
+					result.add(bean);
+				}
+			}
+			inbox.close(true);
+			store.close();
+		} catch (Exception e) {
+			LOG.error("Failed read mails", e);
+		}
+		return result;
+	}
+
     
     /**
      * Return the primary text content of the message.
@@ -71,7 +124,6 @@ public class MailManager {
                 MessagingException, IOException {
         if (p.isMimeType("text/*")) {
             String s = (String)p.getContent();
-            textIsHtml = p.isMimeType("text/html");
             return s;
         }
 

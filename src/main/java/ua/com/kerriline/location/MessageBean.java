@@ -1,6 +1,7 @@
 package ua.com.kerriline.location;
 
 import java.io.IOException;
+import java.util.Date;
 
 import javax.mail.MessagingException;
 
@@ -13,13 +14,23 @@ public class MessageBean {
 	
 	private String subject;
 	private String body;
+	private Date receivedDate;
 
 	public MessageBean() {
 	}
 	
-	public MessageBean(String subject, String body) throws MessagingException, IOException {
+	public MessageBean(String subject, String body, Date date) throws MessagingException, IOException {
 		setSubject(subject);
 		setBody(body);
+		setReceivedDate(date);
+	}
+
+	public void setReceivedDate(Date date) {
+		this.receivedDate = (Date)date.clone();
+	}
+	
+	public Date getReceivedDate() {
+		return (Date)this.receivedDate.clone();
 	}
 
 	public String getSubject() {
