@@ -11,8 +11,12 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Part;
+import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Store;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -97,7 +101,7 @@ public class MailManager {
 			LOG.info("------------------------------");
 			
 			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.HOUR, -2);
+			cal.add(Calendar.HOUR, -4);
 			
 			for (int i = 0; i < messageCount; i++) {
 				LOG.info("Mail Subject:- " + messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
@@ -157,4 +161,33 @@ public class MailManager {
 
         return null;
     }
+    
+    public void sendMail(String text) throws IOException {
+		Properties props = new Properties();
+		props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("mail.properties"));
+
+		Session session = Session.getDefaultInstance(props,
+			new javax.mail.Authenticator() {
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(email, pass);
+				}
+			});
+
+		try {
+
+			Message message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(email));
+			message.setRecipients(Message.RecipientType.TO,
+					InternetAddress.parse("autoinform@uz.gov.ua"));
+			message.setSubject("1392");
+			message.setText(text);
+
+			Transport.send(message);
+
+			LOG.info("Mails send successfully");
+
+		} catch (MessagingException e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

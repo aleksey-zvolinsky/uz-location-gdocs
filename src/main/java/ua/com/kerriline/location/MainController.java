@@ -54,6 +54,36 @@ public class MainController {
 		
 	}
 	
+	
+	@RequestMapping("/send")
+	@ResponseBody
+	String send() {
+		try {
+			LOG.info("Authorizing");
+			sheet.authorize();
+			LOG.info("Reading tanks");
+			List<Map<String, String>> tanks = sheet.readTanks();
+			String text = "";
+			int i = 0;
+			for (Map<String, String> tank : tanks) {
+				i++;
+				text += tank.get("вагон") + "\n";
+				if(i > 30) {
+					LOG.info("Sending mail");
+					mail.sendMail(text);
+				}
+			}
+			LOG.info("Sending mail");
+			mail.sendMail(text);
+			return "done";
+		} catch (Exception e) {
+			LOG.error("Failed to get mails", e);
+			return "failed";
+		}
+		
+	}
+	
+	
 	@RequestMapping("/table")
 	@ResponseBody
 	String table() {

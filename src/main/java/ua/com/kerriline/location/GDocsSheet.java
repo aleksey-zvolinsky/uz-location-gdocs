@@ -68,6 +68,7 @@ public class GDocsSheet {
 	public List<Map<String, String>> readTanks() throws IOException, ServiceException {
 
 		List<ListEntry> tanks = helper.getWorksheetData(spreadSheetName, tanksWorksheetName);
+		tanks.remove(0);
 
 		List<Map<String, String>> result = new ArrayList<>();
 		for (ListEntry entry : tanks) {

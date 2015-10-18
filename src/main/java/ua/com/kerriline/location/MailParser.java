@@ -154,7 +154,7 @@ public class MailParser {
 	}
 
 	public List<Map<String, String>> merge(List<Map<String, String>> tanks, List<Map<String, String>> rawData) {
-		String tankKey = "номервагона";
+		String tankKey = "вагон";
 		String dataKey = "ДАННЫЕ О ВАГОНЕ";
 		List<Map<String, String>> result = new ArrayList<>(); 
 		for (Map<String, String> tank : tanks) {
