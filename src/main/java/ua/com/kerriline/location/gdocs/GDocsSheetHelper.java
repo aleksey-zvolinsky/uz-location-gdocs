@@ -1,4 +1,4 @@
-package ua.com.kerriline.location;
+package ua.com.kerriline.location.gdocs;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
@@ -27,23 +28,23 @@ import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.data.spreadsheet.WorksheetFeed;
-import com.google.gdata.model.batch.BatchUtils;
 import com.google.gdata.util.ServiceException;
 
 public class GDocsSheetHelper {
 	
 	private static final String TANK = "ДАННЫЕ О ВАГОНЕ";
 	private static final String SPREADSHEET_SERVICE_URL = "https://spreadsheets.google.com/feeds/spreadsheets/private/full";
-	private final static List<String> SCOPES = Arrays.asList("https://spreadsheets.google.com/feeds https://docs.google.com/feeds");
+	private final static List<String> SCOPES = Arrays.asList("https://spreadsheets.google.com/feeds https://docs.google.com/feeds https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive.apps.readonly https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.metadata");
 	private static final Log LOG = LogFactory.getLog(GDocsSheetHelper.class);
 	private SpreadsheetService service;
 	
-	
-	public GDocsSheetHelper(String projectName) {
+	public void setCredentials(String serviceAccountEmail, String p12FileName, String projectName) throws GeneralSecurityException, IOException {
 		service = new SpreadsheetService(projectName);
+		service.setOAuth2Credentials(authorize(serviceAccountEmail, p12FileName));
 	}
 	
-	public void authorize(String serviceAccountEmail, String p12FileName) throws GeneralSecurityException, IOException {
+	
+	public Credential authorize(String serviceAccountEmail, String p12FileName) throws GeneralSecurityException, IOException {
 		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
 		
@@ -56,8 +57,8 @@ public class GDocsSheetHelper {
 		    .setServiceAccountScopes(SCOPES)
 		    .setServiceAccountPrivateKeyFromP12File(new File(file))
 		    .build();
+		return credential;
 
-		service.setOAuth2Credentials(credential);
 	}
 	
 	
@@ -132,7 +133,6 @@ public class GDocsSheetHelper {
         spreadsheetQuery.setTitleExact(true);
         SpreadsheetFeed spreadsheet = service.getFeed(spreadsheetQuery,
                                                SpreadsheetFeed.class);
-
         if (spreadsheet.getEntries() != null
                  && spreadsheet.getEntries().size() == 1) {
             return spreadsheet.getEntries().get(0);

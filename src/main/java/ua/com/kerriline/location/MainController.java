@@ -1,9 +1,5 @@
 package ua.com.kerriline.location;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import javax.inject.Inject;
 
 import org.apache.commons.logging.Log;
@@ -14,6 +10,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import ua.com.kerriline.location.gdocs.GDocsSheet;
+import ua.com.kerriline.location.mail.MailManager;
+import ua.com.kerriline.location.mail.MailParser;
 
 @Controller
 @EnableAutoConfiguration
@@ -27,10 +27,11 @@ public class MainController {
 		SpringApplication.run(MainController.class, args);
 	}
 	
-	//@Inject	SchedulerManager scheduler;
+	@Inject	SchedulerManager scheduler;
 	@Inject	MailManager mail;
 	@Inject	MailParser source;
 	@Inject	GDocsSheet sheet;
+	@Inject LocationManager location;
 	
 	@RequestMapping("/")
 	@ResponseBody
@@ -56,24 +57,7 @@ public class MainController {
 	@ResponseBody
 	String send() {
 		try {
-			LOG.info("Authorizing");
-			sheet.authorize();
-			LOG.info("Reading tanks");
-			List<Map<String, String>> tanks = sheet.readTanks();
-			StringBuilder text = new StringBuilder();
-			int i = 0;
-			for (Map<String, String> tank : tanks) {
-				i++;
-				text.append(tank.get("вагон")).append("\n");
-				if(i > 150) {
-					LOG.info("Sending mail");
-					mail.sendMail(text.toString());
-					text.setLength(0);
-					i = 0;
-				}
-			}
-			LOG.info("Sending mail");
-			mail.sendMail(text.toString());
+			location.send();
 			return "done";
 		} catch (Exception e) {
 			LOG.error("Failed to get mails", e);
@@ -93,30 +77,24 @@ public class MainController {
 	@ResponseBody
 	String sheet() {
 		try {
-			LOG.info("Authorizing");
-			sheet.authorize();
-			LOG.info("Reading tanks");
-			List<Map<String, String>> tanks = sheet.readTanks();
-			LOG.info("Reading column association");
-			Map<String, String> columns = sheet.readColumns();
-			LOG.info("Reading mails");
-			List<MessageBean> messages = mail.getAll1392Messages();
-			Collections.reverse(messages);
-			for (MessageBean messageBean : messages) {
-				List<Map<String, String>> rawData = source.text2table(messageBean);
-				LOG.info("Merging tanks and mail data");
-				List<Map<String, String>> newData = source.merge(tanks, rawData);
-				LOG.info("Writing data");
-				sheet.writeData(columns, newData);
-			}
-			LOG.info("Sheet updated");
+			location.mail2sheet();
 			return "done";
 		} catch (Exception e) {
 			LOG.error("Failed to make sheet", e);
 			return "failed";
 		}
-		
-		
+	}
+	
+	@RequestMapping("/export")
+	@ResponseBody
+	String exportAndSend() {
+		try {
+			location.exportAndSend();
+			return "done";
+		} catch (Exception e) {
+			LOG.error("Failed to make sheet", e);
+			return "failed";
+		}
 	}
 	
 	
@@ -124,10 +102,7 @@ public class MainController {
 	@ResponseBody
 	String full() {
 		try {
-			send();
-			LOG.info("Sleep for 10 minutes before checking mails");
-			Thread.currentThread().sleep(10 * 60 * 1000);
-			sheet();
+			location.fulltrip();
 			return "done";
 		} catch (Exception e) {
 			LOG.error("Failed to make sheet", e);

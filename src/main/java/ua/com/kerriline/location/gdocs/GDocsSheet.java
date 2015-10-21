@@ -1,4 +1,4 @@
-package ua.com.kerriline.location;
+package ua.com.kerriline.location.gdocs;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.inject.Inject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,25 +42,13 @@ public class GDocsSheet {
 	@Value("${google.service-account.p12-file}")
 	private String p12FileName;
 
+	@Inject
 	private GDocsSheetHelper helper;
 
-	
-	
-	public GDocsSheet(String serviceAccountEmail, String p12FileName) {
-		this.serviceAccountEmail = serviceAccountEmail;
-		this.p12FileName = p12FileName;
-	}
-
-	public GDocsSheet() {
-		helper = new GDocsSheetHelper(projectName);
-	}
-
 	public void authorize() throws GeneralSecurityException, IOException {
-		helper.authorize(serviceAccountEmail, p12FileName);
+		helper.setCredentials(serviceAccountEmail, p12FileName, projectName);
 	}
 	
-
-
 	/**
 	 * 
 	 * @return List<"FieldName" -> "FieldValue">

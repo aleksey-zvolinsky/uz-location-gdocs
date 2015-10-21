@@ -1,4 +1,4 @@
-package ua.com.kerriline.location;
+package ua.com.kerriline.location.mail;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

@@ -1,4 +1,4 @@
-package ua.com.kerriline.location;
+package ua.com.kerriline.location.mail;
 
 import java.io.IOException;
 import java.util.Date;

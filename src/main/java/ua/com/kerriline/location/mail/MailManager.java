@@ -1,11 +1,15 @@
-package ua.com.kerriline.location;
+package ua.com.kerriline.location.mail;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -16,7 +20,9 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -188,6 +194,57 @@ public class MailManager {
 					InternetAddress.parse("autoinform@uz.gov.ua"));
 			message.setSubject("1392");
 			message.setText(text);
+
+			Transport.send(message);
+
+			LOG.info("Mails send successfully");
+
+		} catch (MessagingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+
+	public void sendFile(File fileToSend, String mailTo) {
+		Properties props = new Properties();
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.host", "smtp.gmail.com");
+		props.put("mail.smtp.port", "587");
+
+		final String username = email;
+		final String password = pass;
+
+		
+		Session session = Session.getInstance(props,
+			new javax.mail.Authenticator() {
+				protected PasswordAuthentication getPasswordAuthentication() {
+					return new PasswordAuthentication(username, password);
+				}
+			});
+
+		try {
+
+			Message message = new MimeMessage(session);
+			message.setFrom(new InternetAddress(email));
+			message.setRecipients(Message.RecipientType.TO,
+					InternetAddress.parse(mailTo));
+			message.setSubject("Дислокация");
+			message.setText("Смотрите вложение");
+			
+			MimeBodyPart messageBodyPart = new MimeBodyPart();
+
+	        Multipart multipart = new MimeMultipart();
+
+	        messageBodyPart = new MimeBodyPart();
+	        String file = fileToSend.getPath();
+	        String fileName = fileToSend.getName();
+	        DataSource source = new FileDataSource(file);
+	        messageBodyPart.setDataHandler(new DataHandler(source));
+	        messageBodyPart.setFileName(fileName);
+	        multipart.addBodyPart(messageBodyPart);
+
+	        message.setContent(multipart);
 
 			Transport.send(message);
 
