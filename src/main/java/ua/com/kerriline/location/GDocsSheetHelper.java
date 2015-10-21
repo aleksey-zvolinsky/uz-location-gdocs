@@ -27,10 +27,12 @@ import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.data.spreadsheet.WorksheetFeed;
+import com.google.gdata.model.batch.BatchUtils;
 import com.google.gdata.util.ServiceException;
 
 public class GDocsSheetHelper {
 	
+	private static final String TANK = "ДАННЫЕ О ВАГОНЕ";
 	private static final String SPREADSHEET_SERVICE_URL = "https://spreadsheets.google.com/feeds/spreadsheets/private/full";
 	private final static List<String> SCOPES = Arrays.asList("https://spreadsheets.google.com/feeds https://docs.google.com/feeds");
 	private static final Log LOG = LogFactory.getLog(GDocsSheetHelper.class);
@@ -113,10 +115,10 @@ public class GDocsSheetHelper {
 
 	    
 
-	    LOG.info("-- id: " + id + "  title: " + entry.getTitle().getPlainText());
+	    LOG.debug("-- id: " + id + "  title: " + entry.getTitle().getPlainText());
 
 	    for (String tag : entry.getCustomElements().getTags()) {
-	    	LOG.info("     <gsx:" + tag + ">"
+	    	LOG.debug("     <gsx:" + tag + ">"
 	          + entry.getCustomElements().getValue(tag) + "</gsx:" + tag + ">");
 	    }
 	  }
@@ -182,14 +184,17 @@ public class GDocsSheetHelper {
 				realColumns.put(controlEntry.getCustomElements().getValue(columnHeader), columnHeader);
 			}
 			
-			
+			int i = 0;
 			for (Map<String, String> record : newData) {
-				ListEntry existEntry = getListEntry(record, worksheet.getListFeedUrl(), realColumns);
+				i++;
+				ListEntry existEntry = getListEntry(entries, record, worksheet.getListFeedUrl(), realColumns);
 				if (null == existEntry){
+					LOG.info("Inserting record " + i);
 					ListEntry newEntry = new ListEntry();
 					applyNewData(newEntry, realColumns, columns, record);
 					service.insert(worksheet.getListFeedUrl(), newEntry);
 				} else {
+					LOG.info("Updating record " + i);
 					applyNewData(existEntry, realColumns, columns, record);
 					existEntry.update();
 				}
@@ -198,7 +203,6 @@ public class GDocsSheetHelper {
 		} catch (Exception e) {
 			LOG.error("Failed to write data", e);
 		}
-	
 	}
 
 	private void applyNewData(ListEntry newEntry, Map<String, String> realColumns, Map<String, String> columns, Map<String, String> record) {
@@ -206,14 +210,26 @@ public class GDocsSheetHelper {
 			String columnHeader = realColumns.get(column.getValue());
 			String newContents = record.get(column.getKey());
 			if(null != newContents) {
-				LOG.info(columnHeader + " = " + newContents);
+				LOG.debug(columnHeader + " = " + newContents);
 				newEntry.getCustomElements().setValueLocal(columnHeader, newContents);
 			}
 		}
 	}
+	
+	private ListEntry getListEntry(List<ListEntry> entries, Map<String, String> record, URL listFeedUrl,
+			Map<String, String> realColumns) {
+		String tank = record.get(TANK);
+		String queryColumn = realColumns.get("4");
+		for (ListEntry listEntry : entries) {
+			if(tank.equals(listEntry.getCustomElements().getValue(queryColumn))){
+				return listEntry;
+			}
+		}
+		return null;
+	}
 
 	private ListEntry getListEntry(Map<String, String> record, URL listFeedUrl, Map<String, String> realColumns) throws IOException, ServiceException {
-		String tank = record.get("ДАННЫЕ О ВАГОНЕ");
+		String tank = record.get(TANK);
 		String queryColumn = realColumns.get("4");
 		String structuredQuery = queryColumn + "=" + tank;
 		return query(structuredQuery, listFeedUrl); 

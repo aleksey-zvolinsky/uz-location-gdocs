@@ -44,6 +44,7 @@ public class MailParser {
 		List<Map<String, String>> res = new ArrayList<Map<String, String>>();
 		
 		try {
+			LOG.info("Preparing text");
 			String text = prepareText(messageBean.getBody());
 			int i = 1;
 			for(String part: SPLITTER.split(text)){
@@ -79,11 +80,17 @@ public class MailParser {
 			res = res.replace(what, "");
 		}
 		
-		while(res.contains("ПОСЛЕДНИИ ОПЕРАЦИИ")) {
-			res = res.replace(res.substring(res.indexOf("ПОСЛЕДНИИ ОПЕРАЦИИ"), res.indexOf("КОД ГРУЗА", res.indexOf("ПОСЛЕДНИИ ОПЕРАЦИИ"))-2), "");
+		StringBuilder b = new StringBuilder();
+		int newPos = 0;
+		int lastPos = 0;
+
+		while((newPos = res.indexOf("ПОСЛЕДНИИ ОПЕРАЦИИ", lastPos)) != -1) {
+			b.append(res.substring(lastPos, newPos));
+			lastPos = res.indexOf("КОД ГРУЗА", newPos)-2;
 		}
-		
-		return res;
+		b.append(res.substring(lastPos));
+				
+		return b.toString();
 	}
 	
 	private Map<String, String> postFilter(Map<String, String> map) {
@@ -96,8 +103,8 @@ public class MailParser {
 	private void splitFieldsWithId(Map<String, String> map) {
 		for(String toSplitField: idNameFields) {
 			String fullValue = map.get(toSplitField);
-			int pos = fullValue.indexOf(" ");
-			if(pos == -1) {
+			int pos;
+			if(fullValue == null || (pos = fullValue.indexOf(" ")) == -1) {
 				continue;
 			}
 			String id = fullValue.substring(0, pos);
@@ -142,7 +149,7 @@ public class MailParser {
 			for(String line : Splitter.on("\n").split(res)) {
 				List<String> val = Splitter.on(":").trimResults().splitToList(line);
 				if(duplicate.equals(val.get(0))) {
-					sb.append(duplicate+"-"+i++).append(":").append(val.get(1));	
+					sb.append(duplicate).append("-").append(i++).append(":").append(val.get(1));	
 				} else {
 					sb.append(line);
 				}

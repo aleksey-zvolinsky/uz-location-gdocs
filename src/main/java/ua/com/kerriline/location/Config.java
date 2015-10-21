@@ -1,5 +1,6 @@
 package ua.com.kerriline.location;
 
+import org.quartz.SchedulerException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -29,5 +30,11 @@ public class Config {
 	@Bean
 	public GDocsSheet gDocsSheet() {
 		return new GDocsSheet();
+	}
+	
+	public SchedulerManager schedulerManager() throws SchedulerException {
+		SchedulerManager manager = new SchedulerManager();
+//		manager.setup();
+		return manager;
 	}
 }

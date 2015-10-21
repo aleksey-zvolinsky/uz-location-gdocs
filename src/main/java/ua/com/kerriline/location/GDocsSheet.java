@@ -74,7 +74,7 @@ public class GDocsSheet {
 		for (ListEntry entry : tanks) {
 			Map<String, String> tank = new HashMap<>();
 			for (String key : entry.getCustomElements().getTags()) {
-				LOG.info(key+"->"+entry.getCustomElements().getValue(key));
+				LOG.debug(key+"->"+entry.getCustomElements().getValue(key));
 				tank.put(key, entry.getCustomElements().getValue(key));
 			}
 			result.add(tank);

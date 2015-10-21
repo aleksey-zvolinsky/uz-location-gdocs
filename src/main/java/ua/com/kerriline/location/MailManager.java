@@ -43,7 +43,7 @@ public class MailManager {
 		MessageBean bean = null;
 		try {
 			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("mail.properties"));
-			Session session = Session.getDefaultInstance(props, null);
+			Session session = Session.getInstance(props, null);
 
 			Store store = session.getStore("imaps");
 			
@@ -83,7 +83,7 @@ public class MailManager {
 		List<MessageBean> result = new ArrayList<MessageBean>();
 		try {
 			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("mail.properties"));
-			Session session = Session.getDefaultInstance(props, null);
+			Session session = Session.getInstance(props, null);
 
 			Store store = session.getStore("imaps");
 			
@@ -101,7 +101,7 @@ public class MailManager {
 			LOG.info("------------------------------");
 			
 			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.HOUR, -4);
+			cal.add(Calendar.HOUR, -1);
 			
 			for (int i = 0; i < messageCount; i++) {
 				LOG.info("Mail Subject:- " + messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
@@ -164,12 +164,19 @@ public class MailManager {
     
     public void sendMail(String text) throws IOException {
 		Properties props = new Properties();
-		props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("mail.properties"));
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.host", "smtp.gmail.com");
+		props.put("mail.smtp.port", "587");
 
-		Session session = Session.getDefaultInstance(props,
+		final String username = email;
+		final String password = pass;
+
+		
+		Session session = Session.getInstance(props,
 			new javax.mail.Authenticator() {
 				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(email, pass);
+					return new PasswordAuthentication(username, password);
 				}
 			});
 
