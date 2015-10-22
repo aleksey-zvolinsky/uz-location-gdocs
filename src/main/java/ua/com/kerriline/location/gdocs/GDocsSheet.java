@@ -29,11 +29,15 @@ public class GDocsSheet {
 	private static final Log LOG = LogFactory.getLog(GDocsSheet.class);
 	
 	/** Our view of Google Spreadsheets as an authenticated Google user. */
-	//TODO move to configuration
+	@Value("${google.project-name}")
 	private String projectName = "kerriline-1101";
+	@Value("${google.sheet.file-name}")
 	private String spreadSheetName = "Дислокация";
+	@Value("${google.sheet.tanks-worksheet-name}")
 	private String tanksWorksheetName = "Вагоны";
+	@Value("${google.sheet.binding-worksheet-name}")
 	private String columnsWorksheetName = "Соответствие";
+	@Value("${google.sheet.results-worksheet-name}")
 	private String resultWorksheetName = "Результат";
 	
 	@Value("${google.service-account.email}")

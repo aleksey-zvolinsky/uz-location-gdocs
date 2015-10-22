@@ -53,7 +53,6 @@ public class Config {
 	@Bean	
 	public SchedulerManager schedulerManager() throws SchedulerException {
 		SchedulerManager manager = new SchedulerManager();
-		//manager.setup();
 		return manager;
 	}
 	

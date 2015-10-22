@@ -11,6 +11,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.google.gdata.util.ServiceException;
 
@@ -34,13 +35,20 @@ public class LocationManager {
 	@Inject	GDocsSheet sheet;
 	@Inject GDocsDrive drive;
 	
+
+	@Value("${result-mail.to}")
+	private String mailTo = "service@kerriline.com.ua";
+	
 	/**
 	 * send requests on email
+	 * @return 
 	 * @throws IOException 
 	 * @throws GeneralSecurityException 
 	 * @throws ServiceException 
+	 * @throws InterruptedException 
 	 */
-	public void send() throws GeneralSecurityException, IOException, ServiceException {
+	public int send() throws GeneralSecurityException, IOException, ServiceException, InterruptedException {
+		int mailCount = 0;
 		LOG.info("Authorizing");
 		sheet.authorize();
 		LOG.info("Reading tanks");
@@ -50,15 +58,19 @@ public class LocationManager {
 		for (Map<String, String> tank : tanks) {
 			i++;
 			text.append(tank.get("вагон")).append("\n");
-			if(i > 150) {
+			if(i >= 150) {
 				LOG.info("Sending mail");
 				mail.sendMail(text.toString());
+				mailCount++;
+				Thread.sleep(5000);
 				text.setLength(0);
 				i = 0;
 			}
 		}
 		LOG.info("Sending mail");
 		mail.sendMail(text.toString());
+		mailCount++;
+		return mailCount;
 	}
 
 	public void mail2sheet() throws GeneralSecurityException, IOException, ServiceException {
@@ -82,17 +94,21 @@ public class LocationManager {
 	}
 
 	public void fulltrip() throws GeneralSecurityException, IOException, ServiceException, InterruptedException {
-		//send();
+		int requestedMails = send();
 		LOG.info("Sleep for 10 minutes before checking mails");
-		//Thread.currentThread().sleep(5 * 60 * 1000);
+		Thread.sleep(10 * 60 * 1000);
+		if(requestedMails > mail.getAll1392MessageCount()) {
+			requestedMails = send();
+			LOG.info("Sleep for 10 minutes before checking mails");
+			Thread.sleep(10 * 60 * 1000);
+		}
 		mail2sheet();
 		exportAndSend();
 	}
 
 	public void exportAndSend() throws GeneralSecurityException, IOException {
 		File file = drive.export();
-		mail.sendFile(file, "service@kerriline.com.ua");
-		//mail.sendFile(file, "frendos.a@gmail.com");
+		mail.sendFile(file, mailTo);
 	}
 
 }

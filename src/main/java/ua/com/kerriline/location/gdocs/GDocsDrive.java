@@ -1,5 +1,6 @@
 package ua.com.kerriline.location.gdocs;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.GeneralSecurityException;
@@ -36,9 +37,10 @@ public class GDocsDrive {
 
 	private static final Log LOG = LogFactory.getLog(SchedulerManager.class);
 
-	//TODO
+	@Value("${google.sheet.file-name}")
 	private String spreadSheetName = "Дислокация";
 
+	@Value("${google.project-name}")
 	private String projectName = "kerriline-1101";
 	
 	@Value("${google.service-account.email}")
@@ -83,8 +85,12 @@ public class GDocsDrive {
 			}
 		}
 		
+		if(null == fileToExport) {
+			throw new FileNotFoundException("Failed to find required file on Google Drive");
+		}
+		
 		String exportLink = fileToExport.getExportLinks().get("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-		java.io.File file = new java.io.File("C:/home/projects/uz-location/target/" + fileToExport.getTitle() + ".xlsx");
+		java.io.File file = java.io.File.createTempFile(fileToExport.getTitle(), ".xlsx");
 		
 		InputStream source = downloadInputStream(drive, exportLink);
 		FileUtils.copyInputStreamToFile(source, file);

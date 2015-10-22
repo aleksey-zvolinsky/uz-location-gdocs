@@ -27,7 +27,7 @@ public class SchedulerManager {
 	private static final Log LOG = LogFactory.getLog(SchedulerManager.class);
 	
 	@Value("${schedule}")
-	private String cronExpression = "0 45 7,13 ? * MON-FRI";
+	private String cronExpression = "0 45 7,13 ? * *I";
 	
 	@Inject LocationManager location;
 
@@ -35,24 +35,29 @@ public class SchedulerManager {
 	
 	@PostConstruct
 	public void setup() throws SchedulerException {
-		SchedulerFactory sf = new StdSchedulerFactory();
+		try {
+			SchedulerFactory sf = new StdSchedulerFactory();
 
-		sched = sf.getScheduler();
+			sched = sf.getScheduler();
 
-		JobDataMap newJobDataMap = new JobDataMap();
-		newJobDataMap.put("LocationManager", location);
-		
-		JobDetail job = newJob(ScheduledJob.class)
-				.usingJobData(newJobDataMap)
-				.withIdentity("job1", "group1")
-				.build();
+			JobDataMap newJobDataMap = new JobDataMap();
+			newJobDataMap.put("LocationManager", location);
+			
+			JobDetail job = newJob(ScheduledJob.class)
+					.usingJobData(newJobDataMap)
+					.withIdentity("job1", "group1")
+					.build();
 
-		CronTrigger trigger = newTrigger()
-				.withIdentity("trigger1", "group1")
-				.withSchedule(cronSchedule(cronExpression))
-				.build();
+			CronTrigger trigger = newTrigger()
+					.withIdentity("trigger1", "group1")
+					.withSchedule(cronSchedule(cronExpression))
+					.build();
 
-		sched.scheduleJob(job, trigger);
-		sched.start();
+			sched.scheduleJob(job, trigger);
+			sched.start();
+			LOG.info("Scheduler was setup successfully with " + cronExpression + " cron schedule");
+		} catch (Exception e) {
+			LOG.error("Failed to setup scheduler", e);
+		}
 	}
 }

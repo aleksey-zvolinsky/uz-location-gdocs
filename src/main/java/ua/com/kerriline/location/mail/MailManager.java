@@ -26,6 +26,7 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -39,9 +40,17 @@ public class MailManager {
 	
 	private static final Log LOG = LogFactory.getLog(MailManager.class);
 	
-	//TODO move to configuration
+	@Value("${report-mail.login}")
 	private String email = "sledline@gmail.com";
+	@Value("${report-mail.password}")
 	private String pass = "k5666031";
+	@Value("${report-mail.to}")
+	private String autoreportAddress = "autoinform@uz.gov.ua";
+	
+	@Value("${result-mail.subject}")
+	private String resultSubject = "Дислокация";
+	@Value("${result-mail.text}")
+	private String resultText = "Смотрите вложение";
 
 	public MessageBean getLast1392() {
 		Properties props = new Properties();
@@ -110,9 +119,9 @@ public class MailManager {
 			cal.add(Calendar.HOUR, -1);
 			
 			for (int i = 0; i < messageCount; i++) {
-				LOG.info("Mail Subject:- " + messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
+				LOG.debug("Mail Subject:- " + messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
 				if(messages[i].getSubject().contains("1392") && cal.getTime().before(messages[i].getReceivedDate())){
-					LOG.info("Found required mail");
+					LOG.info("Found required mail: "+ messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
 
 					bean = new MessageBean(messages[i].getSubject(), getText(messages[i]), messages[i].getReceivedDate());
 					result.add(bean);
@@ -124,6 +133,49 @@ public class MailManager {
 			LOG.error("Failed read mails", e);
 		}
 		return result;
+	}
+	
+	
+	public int getAll1392MessageCount() {
+		int count = 0;
+		Properties props = new Properties();
+		Message[] messages = null;
+		
+		try {
+			props.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("mail.properties"));
+			Session session = Session.getInstance(props, null);
+
+			Store store = session.getStore("imaps");
+			
+			
+			store.connect("smtp.gmail.com", email, pass);
+
+			Folder inbox = store.getFolder("inbox");
+			inbox.open(Folder.READ_ONLY);
+			int messageCount = inbox.getMessageCount();
+
+			LOG.info("Total Messages:- " + messageCount);
+			
+			messages = inbox.getMessages();
+			
+			LOG.info("------------------------------");
+			
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.HOUR, -1);
+			
+			for (int i = 0; i < messageCount; i++) {
+				LOG.debug("Mail Subject:- " + messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
+				if(messages[i].getSubject().contains("1392") && cal.getTime().before(messages[i].getReceivedDate())){
+					LOG.info("Found required mail: "+ messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
+					count++;
+				}
+			}
+			inbox.close(true);
+			store.close();
+		} catch (Exception e) {
+			LOG.error("Failed read mails", e);
+		}
+		return count;
 	}
 
     
@@ -191,7 +243,7 @@ public class MailManager {
 			Message message = new MimeMessage(session);
 			message.setFrom(new InternetAddress(email));
 			message.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse("autoinform@uz.gov.ua"));
+					InternetAddress.parse(autoreportAddress));
 			message.setSubject("1392");
 			message.setText(text);
 
@@ -229,8 +281,8 @@ public class MailManager {
 			message.setFrom(new InternetAddress(email));
 			message.setRecipients(Message.RecipientType.TO,
 					InternetAddress.parse(mailTo));
-			message.setSubject("Дислокация");
-			message.setText("Смотрите вложение");
+			message.setSubject(resultSubject);
+			message.setText(resultText);
 			
 			MimeBodyPart messageBodyPart = new MimeBodyPart();
 

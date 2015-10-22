@@ -1,6 +1,7 @@
 package ua.com.kerriline.location.gdocs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
@@ -47,8 +48,20 @@ public class GDocsSheetHelper {
 	public Credential authorize(String serviceAccountEmail, String p12FileName) throws GeneralSecurityException, IOException {
 		HttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
 		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+		String file = null;
 		
-		String file = Thread.currentThread().getContextClassLoader().getResource(p12FileName).getFile();
+		if(new File("./config/" + p12FileName).exists()){
+			file = "./config/" + p12FileName;
+		}
+		
+		if(null == file) {
+			URL p12fileUrl = Thread.currentThread().getContextClassLoader().getResource(p12FileName);
+			file = p12fileUrl.getFile();
+		}
+		
+		if(null == file) {
+			throw new FileNotFoundException("Failed to find " + p12FileName + " file");
+		}
 		
 		// Build service account credential.
 		GoogleCredential credential = new GoogleCredential.Builder().setTransport(httpTransport)
@@ -226,13 +239,6 @@ public class GDocsSheetHelper {
 			}
 		}
 		return null;
-	}
-
-	private ListEntry getListEntry(Map<String, String> record, URL listFeedUrl, Map<String, String> realColumns) throws IOException, ServiceException {
-		String tank = record.get(TANK);
-		String queryColumn = realColumns.get("4");
-		String structuredQuery = queryColumn + "=" + tank;
-		return query(structuredQuery, listFeedUrl); 
 	}
 
 	/**
