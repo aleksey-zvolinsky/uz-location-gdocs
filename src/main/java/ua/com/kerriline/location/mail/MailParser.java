@@ -178,5 +178,22 @@ public class MailParser {
 		}
 		return result;
 	}
+	
+	public List<String> getObsoleteTanks(List<Map<String, String>> tanks, List<Map<String, String>> oldTanks, String existTankKey) {
+		String tankKey = "вагон";
+		List<String> result = new ArrayList<>(); 
+		List<Map<String, String>> existTanks = new ArrayList<>(); 
+		
+		for(Map<String, String> rec : existTanks) {
+			result.add(rec.get(existTankKey));
+		}
+		
+		existTanks.addAll(oldTanks);
+		for (Map<String, String> tank : tanks) {
+			String value = tank.get(tankKey);
+			result.remove(value);
+		}
+		return result;
+	}
 }
 

@@ -7,11 +7,10 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.google.api.client.auth.oauth2.Credential;
@@ -50,7 +49,7 @@ public class GDocsDrive {
 	private String p12FileName;
 	
 	
-	@Inject GDocsSheetHelper helper;
+	@Autowired GDocsSheetHelper helper;
     /**
      * Build and return an authorized Drive client service.
      * @return an authorized Drive client service

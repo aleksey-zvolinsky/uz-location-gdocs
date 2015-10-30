@@ -16,6 +16,13 @@
 
 	<properties>
 		<java.version>1.8</java.version>
+		
+		<dist.dir>${project.build.directory}/dist</dist.dir>
+		<dist.project.id>${project.artifactId}</dist.project.id>
+		<dist.project.name>Dislocation</dist.project.name>
+		<dist.project.description></dist.project.description>
+		<dist.start.class>ua.com.kerriline.location.MainController</dist.start.class>
+		<dist.jmx.port>50201</dist.jmx.port>
 	</properties>
 	
 	<build>
@@ -23,22 +30,82 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-                    </execution>
-                </executions>
+<!--                 <executions> -->
+<!--                     <execution> -->
+<!--                         <goals> -->
+<!--                             <goal>repackage</goal> -->
+<!--                         </goals> -->
+<!--                     </execution> -->
+<!--                 </executions> -->
             </plugin>
-        </plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>com.sun.winsw</groupId>
+									<artifactId>winsw</artifactId>
+									<classifier>bin</classifier>
+									<type>exe</type>
+									<destFileName>service.exe</destFileName>
+								</artifactItem>
+							</artifactItems>
+							<outputDirectory>${dist.dir}</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${dist.dir}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>src/main/dist</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
-<!-- 		<resources> -->
-<!-- 			<resource> -->
-<!-- 				<targetPath>.</targetPath> -->
-<!-- 				<directory>src/main/config</directory> -->
-<!-- 			</resource> -->
-<!-- 		</resources> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>src/main/assembly/unix.xml</descriptor>
+						<descriptor>src/main/assembly/windows.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>assembly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>            
+        </plugins>
     </build>
 
 	<dependencies>
@@ -47,6 +114,26 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-daemon</groupId>
+			<artifactId>commons-daemon</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.winsw</groupId>
+			<artifactId>winsw</artifactId>
+			<classifier>bin</classifier>
+			<type>exe</type>
+			<scope>provided</scope>
+		</dependency>
+		
+		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
 		</dependency>
@@ -54,16 +141,7 @@
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>javax.inject</groupId>
-			<artifactId>javax.inject</artifactId>
-			<version>1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-		</dependency>
-
+		
 		<dependency>
 			<groupId>com.google.gdata</groupId>
 			<artifactId>core</artifactId>
@@ -125,7 +203,49 @@
 		</dependency>
 		
 	</dependencies>
-
-	<!-- Additional lines to be added here... -->
+	
+	
+	<dependencyManagement>
+		<dependencies>
+<!-- 			<dependency> -->
+<!-- 				<groupId>com.example</groupId> -->
+<!-- 				<artifactId>spring-boot-daemon-integration</artifactId> -->
+<!-- 				<version>0.0.1-SNAPSHOT</version> -->
+<!-- 			</dependency> -->
+			<dependency>
+				<groupId>commons-daemon</groupId>
+				<artifactId>commons-daemon</artifactId>
+				<version>1.0.15</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.winsw</groupId>
+				<artifactId>winsw</artifactId>
+				<version>1.18</version>
+				<classifier>bin</classifier>
+				<type>exe</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
+	<profiles>
+		<profile>
+			<id>jenkins</id>
+			<activation>
+				<activeByDefault>true</activeByDefault> <!-- change this to false, if you don't like to have it on per default -->
+			</activation>
+			<repositories>
+				<repository>
+					<id>repo.jenkins-ci.org</id>
+					<url>http://repo.jenkins-ci.org/public/</url>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>repo.jenkins-ci.org</id>
+					<url>http://repo.jenkins-ci.org/public/</url>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
+	</profiles>
 
 </project>

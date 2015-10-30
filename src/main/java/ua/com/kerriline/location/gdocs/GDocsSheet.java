@@ -8,10 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +45,7 @@ public class GDocsSheet {
 	@Value("${google.service-account.p12-file}")
 	private String p12FileName;
 
-	@Inject
+	@Autowired
 	private GDocsSheetHelper helper;
 
 	public void authorize() throws GeneralSecurityException, IOException {
@@ -76,8 +75,53 @@ public class GDocsSheet {
 		
 		return result;
 	}
+	
+
+	public List<Map<String, String>> readResultTanks() throws IOException, ServiceException {
+		List<ListEntry> tanks = helper.getWorksheetData(spreadSheetName, resultWorksheetName);
+		tanks.remove(0);
+
+		List<Map<String, String>> result = new ArrayList<>();
+		for (ListEntry entry : tanks) {
+			Map<String, String> tank = new HashMap<>();
+			for (String key : entry.getCustomElements().getTags()) {
+				LOG.debug(key+"->"+entry.getCustomElements().getValue(key));
+				tank.put(key, entry.getCustomElements().getValue(key));
+			}
+			result.add(tank);
+		}
+		
+		return result;
+	}
+	
+
+	/** 
+	 * Removing tank from result worksheet
+	 * 
+	 * @param tank to delete
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
+	public void removeTank(String tank) throws IOException, ServiceException {
+		List<ListEntry> results = helper.getWorksheetData(spreadSheetName, resultWorksheetName);
+		Map<String, String> realColumns = helper.getRealColumns(spreadSheetName, resultWorksheetName);
+		String key = realColumns.get("4");
+
+		for (ListEntry entry : results) {			
+			if(tank.equals(entry.getCustomElements().getValue(key))){
+				entry.delete();
+			}
+		}
+	}
 
 
+	/**
+	 * 
+	 * @return mapping between mail columns and worksheet columns
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
 	public Map<String, String> readColumns() throws MalformedURLException, IOException, ServiceException {
 
 		List<ListEntry> list = helper.getWorksheetData(spreadSheetName, columnsWorksheetName);
@@ -100,5 +144,10 @@ public class GDocsSheet {
 	public void writeData(Map<String, String> columns, List<Map<String, String>> newData) throws IOException, ServiceException {
 		helper.writeData(spreadSheetName, resultWorksheetName, columns, newData);
 	}
+
+	public Map<String, String> getRealColumns() throws IOException, ServiceException {
+		return helper.getRealColumns(spreadSheetName, resultWorksheetName);
+	}
+
 
 }

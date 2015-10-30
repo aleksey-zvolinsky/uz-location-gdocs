@@ -5,7 +5,6 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +15,7 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 /**
  * 
@@ -29,7 +29,7 @@ public class SchedulerManager {
 	@Value("${schedule}")
 	private String cronExpression = "0 45 7,13 ? * *I";
 	
-	@Inject LocationManager location;
+	@Autowired LocationManager location;
 
 	private Scheduler sched;
 	

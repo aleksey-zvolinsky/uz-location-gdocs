@@ -1,9 +1,8 @@
 package ua.com.kerriline.location;
 
-import javax.inject.Inject;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
@@ -27,11 +26,11 @@ public class MainController {
 		SpringApplication.run(MainController.class, args);
 	}
 	
-	@Inject	SchedulerManager scheduler;
-	@Inject	MailManager mail;
-	@Inject	MailParser source;
-	@Inject	GDocsSheet sheet;
-	@Inject LocationManager location;
+	@Autowired SchedulerManager scheduler;
+	@Autowired MailManager mail;
+	@Autowired MailParser source;
+	@Autowired GDocsSheet sheet;
+	@Autowired LocationManager location;
 	
 	@RequestMapping("/")
 	@ResponseBody
@@ -77,6 +76,7 @@ public class MainController {
 	@ResponseBody
 	String sheet() {
 		try {
+			location.removeDeleted();
 			location.mail2sheet();
 			return "done";
 		} catch (Exception e) {

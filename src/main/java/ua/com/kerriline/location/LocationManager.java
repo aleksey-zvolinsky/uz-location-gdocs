@@ -7,16 +7,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
+import javax.mail.MessagingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.google.gdata.util.ServiceException;
 
 import ua.com.kerriline.location.gdocs.GDocsDrive;
 import ua.com.kerriline.location.gdocs.GDocsSheet;
+import ua.com.kerriline.location.gdocs.GDocsSheetHelper;
 import ua.com.kerriline.location.mail.MailManager;
 import ua.com.kerriline.location.mail.MailParser;
 import ua.com.kerriline.location.mail.MessageBean;
@@ -30,10 +32,11 @@ public class LocationManager {
 
 	private static final Log LOG = LogFactory.getLog(LocationManager.class);
 	
-	@Inject	MailManager mail;
-	@Inject	MailParser source;
-	@Inject	GDocsSheet sheet;
-	@Inject GDocsDrive drive;
+	@Autowired MailManager mail;
+	@Autowired MailParser source;
+	@Autowired GDocsSheet sheet;
+	@Autowired GDocsSheetHelper sheetHelper;
+	@Autowired GDocsDrive drive;
 	
 
 	@Value("${result-mail.to}")
@@ -92,8 +95,31 @@ public class LocationManager {
 		}
 		LOG.info("Sheet updated");
 	}
+	
+	public void removeDeleted() throws GeneralSecurityException, IOException, ServiceException {
+		LOG.info("Authorizing");
+		sheet.authorize();
+		LOG.info("Reading tanks");
+		List<Map<String, String>> tanksInput = sheet.readTanks();
+		LOG.info("Reading column association");
+		Map<String, String> columns = sheet.readColumns();
+		LOG.info("Reading tanks from result");
+		List<Map<String, String>> tanksResult = sheet.readResultTanks();
+		Map<String, String> realColumns = sheet.getRealColumns();
+		
+		List<String> tanksToDelete = source.getObsoleteTanks(tanksInput, tanksResult, realColumns.get("4"));
+		for (String tank : tanksToDelete) {
+			sheet.removeTank(tank);
+		}
+		
+		
 
-	public void fulltrip() throws GeneralSecurityException, IOException, ServiceException, InterruptedException {
+		LOG.info("Sheet updated");
+	}
+
+	public void fulltrip() throws GeneralSecurityException, IOException, ServiceException, InterruptedException, MessagingException {
+		LOG.info("Remove deleted tanks");
+		removeDeleted();
 		int requestedMails = send();
 		LOG.info("Sleep for 10 minutes before checking mails");
 		Thread.sleep(10 * 60 * 1000);
@@ -106,9 +132,10 @@ public class LocationManager {
 		exportAndSend();
 	}
 
-	public void exportAndSend() throws GeneralSecurityException, IOException {
+	public void exportAndSend() throws GeneralSecurityException, IOException, MessagingException {
 		File file = drive.export();
-		mail.sendFile(file, mailTo);
+		mail.springSendFile(file, mailTo);
+		//mail.springSendFile(file, "frendos.a@gmail.com");
 	}
 
 }

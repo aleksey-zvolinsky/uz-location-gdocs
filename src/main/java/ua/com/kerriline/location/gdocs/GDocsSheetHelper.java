@@ -177,6 +177,28 @@ public class GDocsSheetHelper {
 	}
 	
 	/**
+	 * TODO: cache it
+	 * 
+	 * @param spreadSheetName
+	 * @param resultWorksheetName
+	 * @return
+	 * @throws IOException
+	 * @throws ServiceException
+	 */
+	public Map<String, String> getRealColumns(String spreadSheetName, String resultWorksheetName) throws IOException, ServiceException {
+		WorksheetEntry worksheet = getWorkSheet(spreadSheetName, resultWorksheetName);
+		
+		List<ListEntry> entries = readAllEntries(worksheet.getListFeedUrl());
+		ListEntry controlEntry = entries.get(1);
+		
+		Map<String, String> realColumns = new HashMap<>();
+		for(String columnHeader: controlEntry.getCustomElements().getTags()){
+			realColumns.put(controlEntry.getCustomElements().getValue(columnHeader), columnHeader);
+		}
+		return realColumns;
+	}
+	
+	/**
 	 * 
 	 * @param resultWorksheetName 
 	 * @param spreadSheetName 
@@ -192,10 +214,7 @@ public class GDocsSheetHelper {
 			List<ListEntry> entries = readAllEntries(worksheet.getListFeedUrl());
 			ListEntry controlEntry = entries.get(1);
 			
-			Map<String, String> realColumns = new HashMap<>();
-			for(String columnHeader: controlEntry.getCustomElements().getTags()){
-				realColumns.put(controlEntry.getCustomElements().getValue(columnHeader), columnHeader);
-			}
+			Map<String, String> realColumns = getRealColumns(spreadSheetName, resultWorksheetName);
 			
 			int i = 0;
 			for (Map<String, String> record : newData) {

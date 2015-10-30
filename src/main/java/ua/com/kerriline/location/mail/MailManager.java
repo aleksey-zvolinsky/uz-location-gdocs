@@ -7,9 +7,6 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -26,7 +23,10 @@ import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 /**
@@ -257,7 +257,7 @@ public class MailManager {
 	}
 
 
-	public void sendFile(File fileToSend, String mailTo) {
+	public void sendFile(File fileToSend, String mailTo) throws IOException {
 		Properties props = new Properties();
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
@@ -282,28 +282,56 @@ public class MailManager {
 			message.setRecipients(Message.RecipientType.TO,
 					InternetAddress.parse(mailTo));
 			message.setSubject(resultSubject);
-			message.setText(resultText);
-			
+			//message.setText(resultText);
+
 			MimeBodyPart messageBodyPart = new MimeBodyPart();
+			MimeBodyPart fileBodyPart = new MimeBodyPart();
 
 	        Multipart multipart = new MimeMultipart();
+	        
+	        messageBodyPart.setText(resultText, "UTF-8");
+	        multipart.addBodyPart(messageBodyPart);
 
-	        messageBodyPart = new MimeBodyPart();
+	        fileBodyPart = new MimeBodyPart();
 	        String file = fileToSend.getPath();
 	        String fileName = fileToSend.getName();
-	        DataSource source = new FileDataSource(file);
-	        messageBodyPart.setDataHandler(new DataHandler(source));
-	        messageBodyPart.setFileName(fileName);
-	        multipart.addBodyPart(messageBodyPart);
+	        //DataSource source = new FileDataSource(file);
+	        //fileBodyPart.setDataHandler(new DataHandler(source));
+	        fileBodyPart.attachFile(fileToSend);
+	        fileBodyPart.setFileName(fileName);
+	        multipart.addBodyPart(fileBodyPart);
 
 	        message.setContent(multipart);
 
 			Transport.send(message);
 
-			LOG.info("Mails send successfully");
+			LOG.info("Mail send successfully");
 
 		} catch (MessagingException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	@Autowired
+    private JavaMailSender javaMailSender;
+	
+	public void springSendFile(File fileToSend, String mailTo) throws IOException, MessagingException {
+		final String username = email;
+		final String password = pass;
+
+		MimeMessage mail = javaMailSender.createMimeMessage();
+
+		MimeMessageHelper helper = new MimeMessageHelper(mail, true);
+		helper.setTo(mailTo);
+		helper.setReplyTo(mailTo);
+		helper.setFrom(email);
+		helper.setSubject(resultSubject);
+		helper.setText(resultText);
+		
+		helper.addAttachment(fileToSend.getName(), fileToSend);
+
+		javaMailSender.send(mail);
+
+		LOG.info("Mail with " + fileToSend.getName() + " file send successfully");
 	}
 }
