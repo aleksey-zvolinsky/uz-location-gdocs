@@ -4,8 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -15,8 +14,7 @@ import ua.com.kerriline.location.mail.MailManager;
 import ua.com.kerriline.location.mail.MailParser;
 
 @Controller
-@EnableAutoConfiguration
-@Import({Config.class, MvcConfiguration.class})
+@SpringBootApplication
 public class MainController {
 
 	private static final Log LOG = LogFactory.getLog(MainController.class);

@@ -11,7 +11,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.2.6.RELEASE</version>
+		<!-- TODO: replace with released version -->
+		<version>1.3.0.RC1</version>
 	</parent>
 
 	<properties>
@@ -27,17 +28,6 @@
 	
 	<build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-<!--                 <executions> -->
-<!--                     <execution> -->
-<!--                         <goals> -->
-<!--                             <goal>repackage</goal> -->
-<!--                         </goals> -->
-<!--                     </execution> -->
-<!--                 </executions> -->
-            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -121,6 +111,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-autoconfigure</artifactId>
+		</dependency>
+		
 		<dependency>
 			<groupId>commons-daemon</groupId>
 			<artifactId>commons-daemon</artifactId>
@@ -207,11 +202,6 @@
 	
 	<dependencyManagement>
 		<dependencies>
-<!-- 			<dependency> -->
-<!-- 				<groupId>com.example</groupId> -->
-<!-- 				<artifactId>spring-boot-daemon-integration</artifactId> -->
-<!-- 				<version>0.0.1-SNAPSHOT</version> -->
-<!-- 			</dependency> -->
 			<dependency>
 				<groupId>commons-daemon</groupId>
 				<artifactId>commons-daemon</artifactId>
@@ -243,6 +233,32 @@
 				<pluginRepository>
 					<id>repo.jenkins-ci.org</id>
 					<url>http://repo.jenkins-ci.org/public/</url>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
+		<profile>
+			<id>spring</id>
+			<activation>
+				<activeByDefault>true</activeByDefault> <!-- change this to false, if you don't like to have it on per default -->
+			</activation>
+			<repositories>
+				<repository>
+					<id>spring-milestones</id>
+					<name>Spring Milestones</name>
+					<url>https://repo.spring.io/milestone</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>spring-milestones</id>
+					<name>Spring Milestones</name>
+					<url>https://repo.spring.io/milestone</url>
+					<snapshots>
+						<enabled>false</enabled>
+					</snapshots>
 				</pluginRepository>
 			</pluginRepositories>
 		</profile>

@@ -36,6 +36,7 @@
 			<source>${dist.dir}/service.xml</source>
 			<outputDirectory/>
 			<destName>${dist.project.id}.xml</destName>
+			<filtered>true</filtered>
 		</file>
 		<file>
 			<source>${dist.dir}/service.exe.config</source>

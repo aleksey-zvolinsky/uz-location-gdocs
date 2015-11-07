@@ -10,7 +10,8 @@
 	<startargument>-Dspring.application.admin.enabled=true</startargument>
 	<startargument>-Dcom.sun.management.jmxremote.port=${dist.jmx.port}</startargument>
 	<startargument>-Dcom.sun.management.jmxremote.authenticate=false</startargument>
-	<startargument>-Dcom.sun.management.jmxremote.ssl=false </startargument>
+	<startargument>-Dcom.sun.management.jmxremote.ssl=false</startargument>
+	<startargument>-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n</startargument>
 	<startargument>-cp</startargument>
 	<startargument>lib/*</startargument>
 	<startargument>ua.com.kerriline.location.daemon.StartSpringBootService</startargument>

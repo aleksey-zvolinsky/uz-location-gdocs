@@ -5,6 +5,7 @@ import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,6 +33,11 @@ public class SchedulerManager {
 	@Autowired LocationManager location;
 
 	private Scheduler sched;
+	
+	@PreDestroy
+	public void close() throws SchedulerException {
+		sched.shutdown();
+	}
 	
 	@PostConstruct
 	public void setup() throws SchedulerException {

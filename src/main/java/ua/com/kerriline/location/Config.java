@@ -8,7 +8,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import ua.com.kerriline.location.gdocs.GDocsDrive;
-import ua.com.kerriline.location.gdocs.GDocsSheet;
 import ua.com.kerriline.location.gdocs.GDocsSheetHelper;
 import ua.com.kerriline.location.mail.MailManager;
 import ua.com.kerriline.location.mail.MailParser;
@@ -32,18 +31,11 @@ public class Config {
 	public MailParser mailParser() {
 		return new MailParser();
 	}
-	
-	@Bean
-	public GDocsSheet gDocsSheet() {
-		return new GDocsSheet();
-	}
-	
+		
 	@Bean
 	public GDocsSheetHelper gDocsSheetHelper() {
 		return new GDocsSheetHelper();
 	}
-	
-	
 	
 	@Bean
 	public GDocsDrive gDocsDrive() {
