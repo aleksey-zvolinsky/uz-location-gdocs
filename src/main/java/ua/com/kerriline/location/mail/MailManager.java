@@ -17,9 +17,7 @@ import javax.mail.Session;
 import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -28,6 +26,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
+
+import com.google.common.base.Strings;
 
 /**
  * http://www.technicalkeeda.com/java/how-to-access-gmail-inbox-using-java-imap
@@ -51,6 +51,8 @@ public class MailManager {
 	private String resultSubject = "Дислокация";
 	@Value("${result-mail.text}")
 	private String resultText = "Смотрите вложение";
+	@Value("${result-mail.attachmentFileName}")
+	private String attachmentFileName = "dislocation.xlsx";
 
 	public MessageBean getLast1392() {
 		Properties props = new Properties();
@@ -255,69 +257,12 @@ public class MailManager {
 			throw new RuntimeException(e);
 		}
 	}
-
-
-	public void sendFile(File fileToSend, String mailTo) throws IOException {
-		Properties props = new Properties();
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true");
-		props.put("mail.smtp.host", "smtp.gmail.com");
-		props.put("mail.smtp.port", "587");
-
-		final String username = email;
-		final String password = pass;
-
-		
-		Session session = Session.getInstance(props,
-			new javax.mail.Authenticator() {
-				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(username, password);
-				}
-			});
-
-		try {
-
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(email));
-			message.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(mailTo));
-			message.setSubject(resultSubject);
-			//message.setText(resultText);
-
-			MimeBodyPart messageBodyPart = new MimeBodyPart();
-			MimeBodyPart fileBodyPart = new MimeBodyPart();
-
-	        Multipart multipart = new MimeMultipart();
-	        
-	        messageBodyPart.setText(resultText, "UTF-8");
-	        multipart.addBodyPart(messageBodyPart);
-
-	        fileBodyPart = new MimeBodyPart();
-	        String file = fileToSend.getPath();
-	        String fileName = fileToSend.getName();
-	        //DataSource source = new FileDataSource(file);
-	        //fileBodyPart.setDataHandler(new DataHandler(source));
-	        fileBodyPart.attachFile(fileToSend);
-	        fileBodyPart.setFileName(fileName);
-	        multipart.addBodyPart(fileBodyPart);
-
-	        message.setContent(multipart);
-
-			Transport.send(message);
-
-			LOG.info("Mail send successfully");
-
-		} catch (MessagingException e) {
-			throw new RuntimeException(e);
-		}
-	}
 	
 	@Autowired
     private JavaMailSender javaMailSender;
+
 	
 	public void springSendFile(File fileToSend, String mailTo) throws IOException, MessagingException {
-		final String username = email;
-		final String password = pass;
 
 		MimeMessage mail = javaMailSender.createMimeMessage();
 
@@ -327,8 +272,11 @@ public class MailManager {
 		helper.setFrom(email);
 		helper.setSubject(resultSubject);
 		helper.setText(resultText);
-		
-		helper.addAttachment(fileToSend.getName(), fileToSend);
+		String fileName = attachmentFileName;
+		if(Strings.isNullOrEmpty(attachmentFileName)) {
+			fileName = fileToSend.getName();
+		}
+		helper.addAttachment(fileName, fileToSend);
 
 		javaMailSender.send(mail);
 

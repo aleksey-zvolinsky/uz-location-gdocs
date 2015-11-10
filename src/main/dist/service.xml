@@ -6,7 +6,8 @@
 	<logpath>%BASE%\logs</logpath>
 	<logmode>rotate</logmode>
 
-	<executable>java</executable>
+	<executable>%BASE%\java\bin\java</executable>
+	<startargument>-Djava.io.tmpdir="%BASE%\temp"</startargument>
 	<startargument>-Dspring.application.admin.enabled=true</startargument>
 	<startargument>-Dcom.sun.management.jmxremote.port=${dist.jmx.port}</startargument>
 	<startargument>-Dcom.sun.management.jmxremote.authenticate=false</startargument>
@@ -17,7 +18,7 @@
 	<startargument>ua.com.kerriline.location.daemon.StartSpringBootService</startargument>
 	<startargument>${dist.start.class}</startargument>
 
-	<stopexecutable>java</stopexecutable>
+	<stopexecutable>%BASE%\java\bin\java</stopexecutable>
 	<stopargument>-cp</stopargument>
 	<stopargument>lib/*</stopargument>
 	<stopargument>ua.com.kerriline.location.daemon.StopSpringBootService</stopargument>
