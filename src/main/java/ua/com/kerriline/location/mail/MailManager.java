@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -18,6 +20,14 @@ import javax.mail.Store;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.AndTerm;
+import javax.mail.search.ComparisonTerm;
+import javax.mail.search.FlagTerm;
+import javax.mail.search.ReceivedDateTerm;
+import javax.mail.search.SearchTerm;
+import javax.mail.search.SubjectTerm;
+
+import com.google.common.base.Strings;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,8 +37,6 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Strings;
-
 /**
  * http://www.technicalkeeda.com/java/how-to-access-gmail-inbox-using-java-imap
  * 
@@ -37,7 +45,7 @@ import com.google.common.base.Strings;
  */
 @Component
 public class MailManager {
-	
+
 	private static final Log LOG = LogFactory.getLog(MailManager.class);
 	
 	@Value("${report-mail.login}")
@@ -92,7 +100,13 @@ public class MailManager {
 	}
 	
 	
-	public List<MessageBean> getAll1392Messages() {
+	public List<MessageBean> search1392Messages() {
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.HOUR, -1);
+		return searchMessages("1392", cal.getTime());
+	}
+	
+	public List<MessageBean> searchMessages(String readWithSubject, Date skipBeforeDate) {
 		Properties props = new Properties();
 		Message[] messages = null;
 		MessageBean bean = null;
@@ -108,27 +122,29 @@ public class MailManager {
 			store.connect("smtp.gmail.com", email, pass);
 
 			Folder inbox = store.getFolder("inbox");
-			inbox.open(Folder.READ_ONLY);
+			inbox.open(Folder.READ_WRITE);
 			int messageCount = inbox.getMessageCount();
 
 			LOG.info("Total Messages:- " + messageCount);
 			
-			messages = inbox.getMessages();
+			ReceivedDateTerm receivedDateTerm = new ReceivedDateTerm(ComparisonTerm.GE, skipBeforeDate);
+			SubjectTerm subjectTerm = new SubjectTerm(readWithSubject);
+			FlagTerm flagTerm = new FlagTerm(new Flags(Flags.Flag.SEEN), false);
+			
+			AndTerm andTerm = new AndTerm(new SearchTerm[]{flagTerm, receivedDateTerm, subjectTerm});
+			//SearchTerm searchTerm = new SearchTermExtension(readWithSubject, skipBeforeDate);
+			messages = inbox.search(andTerm); 
 			
 			LOG.info("------------------------------");
 			
-			Calendar cal = Calendar.getInstance();
-			cal.add(Calendar.HOUR, -1);
-			
-			for (int i = 0; i < messageCount; i++) {
-				LOG.debug("Mail Subject:- " + messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
-				if(messages[i].getSubject().contains("1392") && cal.getTime().before(messages[i].getReceivedDate())){
-					LOG.info("Found required mail: "+ messages[i].getSubject() + ", received " + messages[i].getReceivedDate());
+			for(Message message: messages){
+				LOG.info("Found required mail: "+ message.getSubject() + ", received " + message.getReceivedDate());
 
-					bean = new MessageBean(messages[i].getSubject(), getText(messages[i]), messages[i].getReceivedDate());
-					result.add(bean);
-				}
+				bean = new MessageBean(message.getSubject(), getText(message), message.getReceivedDate());
+				result.add(bean);
+				inbox.setFlags(new Message[] {message}, new Flags(Flags.Flag.SEEN), true);
 			}
+
 			inbox.close(true);
 			store.close();
 		} catch (Exception e) {
@@ -222,7 +238,7 @@ public class MailManager {
         return null;
     }
     
-    public void sendMail(String text) throws IOException {
+    public void sendMail(String subject, String text) throws IOException {
 		Properties props = new Properties();
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
@@ -246,12 +262,12 @@ public class MailManager {
 			message.setFrom(new InternetAddress(email));
 			message.setRecipients(Message.RecipientType.TO,
 					InternetAddress.parse(autoreportAddress));
-			message.setSubject("1392");
+			message.setSubject(subject);
 			message.setText(text);
 
 			Transport.send(message);
 
-			LOG.info("Mails send successfully");
+			LOG.info("Mail was sent successfully");
 
 		} catch (MessagingException e) {
 			throw new RuntimeException(e);
@@ -282,4 +298,5 @@ public class MailManager {
 
 		LOG.info("Mail with " + fileToSend.getName() + " file send successfully");
 	}
+
 }

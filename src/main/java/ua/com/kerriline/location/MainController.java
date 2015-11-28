@@ -29,6 +29,7 @@ public class MainController {
 	@Autowired MailParser source;
 	@Autowired GDocsSheet sheet;
 	@Autowired LocationManager location;
+	@Autowired MileageManager mileage;
 	
 	@RequestMapping("/")
 	@ResponseBody
@@ -40,7 +41,7 @@ public class MainController {
 	@ResponseBody
 	String mail() {
 		try {
-			mail.getAll1392Messages();
+			mail.search1392Messages();
 			return "done";
 		} catch (Exception e) {
 			LOG.error("Failed to get mails", e);
@@ -100,11 +101,23 @@ public class MainController {
 	@ResponseBody
 	String full() {
 		try {
-			location.fulltrip();
+			location.fullTrip();
 			return "done";
 		} catch (Exception e) {
 			LOG.error("Failed to make sheet", e);
 			return "failed";
 		}
+	}
+	
+	@RequestMapping("/mileage")
+	@ResponseBody
+	String mileage() {
+		try {
+			mileage.fullTrip();
+		} catch (Exception e) {
+			LOG.error("Failed to get mileage", e);
+			return "Failed to get mileage";
+		}
+		return "done";
 	}
 }

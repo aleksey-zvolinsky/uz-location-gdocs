@@ -11,7 +11,7 @@ import org.quartz.JobExecutionException;
  *
  */
 @DisallowConcurrentExecution
-public class ScheduledJob implements org.quartz.Job{
+public class LocationScheduledJob implements org.quartz.Job{
 	
 	private static final Log LOG = LogFactory.getLog(SchedulerManager.class);
 	
@@ -20,7 +20,7 @@ public class ScheduledJob implements org.quartz.Job{
 		try {
 			LOG.info("Job started by schedule");
 			LocationManager location = (LocationManager) context.getMergedJobDataMap().get("LocationManager");
-			location.fulltrip();
+			location.fullTrip();
 			LOG.info("Job by schedule finished");
 		} catch (Exception e) {
 			LOG.error("Job by schedule failed", e);
