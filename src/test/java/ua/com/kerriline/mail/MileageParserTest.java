@@ -2,7 +2,6 @@ package ua.com.kerriline.mail;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +26,7 @@ public class MileageParserTest {
 		MileageParser parser = new MileageParser();
 		Mileage mileage = parser.parse("2323-111", message);
 		assertEquals("111", mileage.getTankNumber());
-		assertNull("This tank should not have mileage data", mileage.getMileage());
+		assertEquals("This tank should not have mileage data", "", mileage.getMileage());
 		
 		url = Thread.currentThread().getContextClassLoader().getResource(FILE_NAME);
 		message = new String(Files.readAllBytes(Paths.get(url.toURI())), StandardCharsets.UTF_8);
@@ -35,8 +34,8 @@ public class MileageParserTest {
 		mileage = parser.parse("2323-222", message);
 		assertEquals("222", mileage.getTankNumber());
 		assertNotNull("This tank should have mileage data", mileage.getMileage());
-		assertEquals("2.253 км", mileage.getMileage());
-		assertEquals("13 Ноября 2015", mileage.getMileageDate());
-		assertEquals("157.747 км", mileage.getRestMileage());
+		assertEquals("0  км", mileage.getMileage());
+		assertEquals("12 Августа 2015", mileage.getMileageDate());
+		assertEquals("110.000 км", mileage.getRestMileage());
 	}
 }

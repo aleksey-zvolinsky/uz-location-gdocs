@@ -66,6 +66,7 @@ public class MileageManager {
 			waitForResponse(3 + (absentTanks.size()/30));//minutes
 			responses.addAll(readResponses(skipBeforeDate));
 			absentTanks = findAbsentTanks(tanks, responses);
+			LOG.info("Absent " + absentTanks.size() + " tanks");
 			
 			// waiting for another mails if they come
 			int preSize = 0;
@@ -74,6 +75,7 @@ public class MileageManager {
 				waitForResponse(1);//minutes
 				responses.addAll(readResponses(skipBeforeDate));
 				absentTanks = findAbsentTanks(tanks, responses);
+				LOG.info("Absent " + absentTanks.size() + " tanks");
 			}
 			
 		}

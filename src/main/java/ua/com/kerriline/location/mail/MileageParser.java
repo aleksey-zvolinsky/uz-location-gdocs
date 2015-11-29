@@ -29,8 +29,8 @@ public class MileageParser {
 			.filter(s -> s.contains("ПРОБЕГ"))
 			.findFirst().get();		
 		
-		mileage.setMileageDate(mileageLine.split("на|г.")[1].trim().replaceAll("  ", " "));
-		mileage.setMileage(mileageLine.split("на|г.")[2].trim());
+		mileage.setMileageDate(mileageLine.split("на|г\\.")[1].trim().replaceAll("  ", " "));
+		mileage.setMileage(mileageLine.split("на|г\\.")[2].trim());
 		
 		String mileageRest = reader.lines()
 				.filter(s -> s.contains("Норма  п р о б е г а"))

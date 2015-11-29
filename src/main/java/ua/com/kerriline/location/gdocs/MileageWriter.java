@@ -40,11 +40,24 @@ public class MileageWriter {
 		int i = 0;
 		for (Mileage record: mileage) {
 			LOG.info("Updating record " + ++i + ": " + record);
-			update(record, 1);
+			updateWithAttempts(record, 3);
 		}
 	}
 
-	private void update(Mileage record, int attempt) throws IOException, ServiceException, MalformedURLException {
+	private void updateWithAttempts(Mileage record, int attempt) throws IOException, ServiceException, MalformedURLException {
+		try {
+			update(record);
+		} catch (PreconditionFailedException e) {
+			if(attempt > 0) {
+				LOG.error("Update failed on " + attempt + " attempt, repeating ", e);				
+				updateWithAttempts(record, attempt--);
+			} else {
+				throw e;
+			}
+		}
+	}
+	
+	private void update(Mileage record) throws IOException, ServiceException, MalformedURLException {
 		ListEntry existEntry = gdocs.searchByTank(record.getTankNumber());
 		if (null == existEntry){
 			LOG.error("Failed to find record with " + record.getTankNumber() + " tanknumber");
@@ -54,16 +67,7 @@ public class MileageWriter {
 			gdocs.setValue(existEntry, MILEAGE_REST, record.getRestMileage());
 			gdocs.setValue(existEntry, MILEAGE_UPDATE, df.format(new Date()));
 			existEntry.setEtag("*");
-			try {
-				existEntry.update();
-			} catch (PreconditionFailedException e) {
-				if(attempt <= 2) {
-					LOG.error("Update failed on " + attempt + " attempt, repeating ", e);				
-					update(record, attempt++);
-				} else {
-					throw e;
-				}
-			}
+			existEntry.update();
 		}
 	}
 }
