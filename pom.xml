@@ -6,7 +6,7 @@
 	<groupId>ua.com.kerriline</groupId>
 	<artifactId>uz-location</artifactId>
 	<packaging>jar</packaging>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
