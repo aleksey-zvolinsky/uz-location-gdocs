@@ -12,8 +12,8 @@ import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.util.ServiceException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -30,7 +30,7 @@ public class GDocsSheet {
 
 	private static final String TANK_REAL_COLUMN = "4";
 
-	private static final Log LOG = LogFactory.getLog(GDocsSheet.class);
+	private static final Logger LOG = LoggerFactory.getLogger(GDocsSheet.class);
 	
 	/** Our view of Google Spreadsheets as an authenticated Google user. */
 	@Value("${google.project-name}")

@@ -1,10 +1,10 @@
 package ua.com.kerriline.location;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * 
  * @author Aleksey
@@ -13,7 +13,7 @@ import org.quartz.JobExecutionException;
 @DisallowConcurrentExecution
 public class MileageScheduledJob implements org.quartz.Job{
 	
-	private static final Log LOG = LogFactory.getLog(MileageScheduledJob.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MileageScheduledJob.class);
 	
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {

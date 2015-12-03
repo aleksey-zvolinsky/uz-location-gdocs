@@ -7,8 +7,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.quartz.CronTrigger;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -16,6 +14,8 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 /**
@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
  */
 public class SchedulerManager {
 	
-	private static final Log LOG = LogFactory.getLog(SchedulerManager.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SchedulerManager.class);
 	
 	@Value("${schedule}")
 	private String locationCronExpression = "0 45 7,13 ? * *I";

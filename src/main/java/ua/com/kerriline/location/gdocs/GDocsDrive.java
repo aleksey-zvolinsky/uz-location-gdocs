@@ -7,12 +7,6 @@ import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.GenericUrl;
@@ -25,6 +19,12 @@ import com.google.api.services.drive.Drive.Files;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
 import ua.com.kerriline.location.SchedulerManager;
 
 /**
@@ -34,7 +34,7 @@ import ua.com.kerriline.location.SchedulerManager;
  */
 public class GDocsDrive {
 
-	private static final Log LOG = LogFactory.getLog(SchedulerManager.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SchedulerManager.class);
 
 	@Value("${google.sheet.file-name}")
 	private String spreadSheetName = "Дислокация";

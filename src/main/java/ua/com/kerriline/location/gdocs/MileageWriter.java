@@ -12,8 +12,8 @@ import com.google.gdata.data.spreadsheet.ListEntry;
 import com.google.gdata.util.PreconditionFailedException;
 import com.google.gdata.util.ServiceException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -27,7 +27,7 @@ public class MileageWriter {
 	private static final String MILEAGE_DATE = "ПРОБЕГ-ДАТА";
 	private static final String MILEAGE = "ПРОБЕГ-ТЕКУЩИЙ";
 
-	private static final Log LOG = LogFactory.getLog(MileageWriter.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MileageWriter.class);
 	
 	private DateFormat df = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
 

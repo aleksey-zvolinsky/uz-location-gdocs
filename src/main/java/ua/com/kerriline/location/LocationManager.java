@@ -9,12 +9,12 @@ import java.util.Map;
 
 import javax.mail.MessagingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.google.gdata.util.ServiceException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import com.google.gdata.util.ServiceException;
 
 import ua.com.kerriline.location.gdocs.GDocsDrive;
 import ua.com.kerriline.location.gdocs.GDocsSheet;
@@ -32,7 +32,7 @@ public class LocationManager {
 
 	private static final String REQUEST_NUMBER = "1392";
 
-	private static final Log LOG = LogFactory.getLog(LocationManager.class);
+	private static final Logger LOG = LoggerFactory.getLogger(LocationManager.class);
 	
 	@Autowired MailManager mail;
 	@Autowired MailParser source;

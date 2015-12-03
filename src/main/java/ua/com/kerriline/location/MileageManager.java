@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 
 import com.google.gdata.util.ServiceException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,7 +32,7 @@ import ua.com.kerriline.location.mail.MileageParser;
 @Component
 public class MileageManager {
 	
-	private static final Log LOG = LogFactory.getLog(LocationManager.class);
+	private static final Logger LOG = LoggerFactory.getLogger(LocationManager.class);
 
 	private static final String REQUEST_NUMBER = "2612";
 

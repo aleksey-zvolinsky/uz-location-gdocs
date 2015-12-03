@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.google.common.base.Splitter;
 import com.google.common.base.Splitter.MapSplitter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -21,12 +21,16 @@ import com.google.common.base.Splitter.MapSplitter;
  */
 public class MailParser {
 	
+	private static final Logger LOG = LoggerFactory.getLogger(MailParser.class);
+	
 	private static final String UPDATE_FIELD = "ОБНОВЛЕНО";
-	private static final Log LOG = LogFactory.getLog(MailParser.class);
-	private static final String separator = "ДАННЫЕ";
-	private static final String[] toDelete = {"-- ИЗ ПОД ----------  ", "== РЕМОНТЫ     ==   : ", "== БЛОК РЕЙСА =====   ", "== ОПИСАНИЕ РЕЙСА ==  "};
+	private static final String SEPARATOR = "ДАННЫЕ";
+	
+	private static final String[] TO_DELETE = {"-- ИЗ ПОД ----------  ", "== РЕМОНТЫ     ==   : ", "== БЛОК РЕЙСА =====   ", "== ОПИСАНИЕ РЕЙСА ==  "};
+	
 	private List<String> duplicates = Arrays.asList("СТАНЦИЯ ОПЕРАЦИИ", "ДАТА ОПЕРАЦИИ", "СТАНЦИЯ НАЗНАЧЕНИЯ", "ГРУЗОПОЛУЧАТЕЛЬ", "ГРУЗ", "ГРУЗООТПРАВИТЕЛЬ",
 			"ОПРЕРАЦИЯ", "ДОРОГА ПРИЕМА ГРУЗА", "СТАНЦИЯ", "ВИД РЕМОНТА", "ДОРОГА", "ВЧД", "ГРУЗОПОДЪЕМНОСТЬ");
+	
 	private List<String> idNameFields = Arrays.asList("КОД ГРУЗА", "СТАНЦИЯ НАЗНАЧЕНИЯ-0", "СТАНЦИЯ ОПЕРАЦИИ-0", "СТАНЦИЯ ПРИЕМА ГРУЗА");
 
 
@@ -75,8 +79,8 @@ public class MailParser {
 	}
 
 	private String prepareText(String body) {
-		String res = body.replace(separator, "++++++++++++" + separator);
-		for(String what: toDelete) {
+		String res = body.replace(SEPARATOR, "++++++++++++" + SEPARATOR);
+		for(String what: TO_DELETE) {
 			res = res.replace(what, "");
 		}
 		
