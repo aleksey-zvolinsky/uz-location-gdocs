@@ -17,7 +17,7 @@
     	
     	<Failover name="FailoverMail" 
     		primary="Mail" 
-    		retryIntervalSeconds=60">
+    		retryIntervalSeconds="60">
 		</Failover>
 	</Appenders>
 	<Loggers>
