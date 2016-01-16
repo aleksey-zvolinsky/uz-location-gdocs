@@ -26,6 +26,7 @@ import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
 import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
 import com.google.gdata.data.spreadsheet.WorksheetEntry;
 import com.google.gdata.data.spreadsheet.WorksheetFeed;
+import com.google.gdata.util.PreconditionFailedException;
 import com.google.gdata.util.ServiceException;
 
 import org.slf4j.Logger;
@@ -212,28 +213,48 @@ public class GDocsSheetHelper {
 			WorksheetEntry worksheet = getWorkSheet(spreadSheetName, resultWorksheetName);
 			
 			List<ListEntry> entries = readAllEntries(worksheet.getListFeedUrl());
-			ListEntry controlEntry = entries.get(1);
 			
 			Map<String, String> realColumns = getRealColumns(spreadSheetName, resultWorksheetName);
 			
 			int i = 0;
 			for (Map<String, String> record : newData) {
 				i++;
-				ListEntry existEntry = getListEntry(entries, record, worksheet.getListFeedUrl(), realColumns);
-				if (null == existEntry){
-					LOG.info("Inserting record " + i);
-					ListEntry newEntry = new ListEntry();
-					applyNewData(newEntry, realColumns, columns, record);
-					service.insert(worksheet.getListFeedUrl(), newEntry);
-				} else {
-					LOG.info("Updating record " + i);
-					applyNewData(existEntry, realColumns, columns, record);
-					existEntry.update();
-				}
+				writeRecordWithAttempt(columns, worksheet, entries, realColumns, i, record, 3);
 
 			}
 		} catch (Exception e) {
 			LOG.error("Failed to write data", e);
+		}
+	}
+
+	private void writeRecordWithAttempt(Map<String, String> columns, WorksheetEntry worksheet, List<ListEntry> entries,
+			Map<String, String> realColumns, int i, Map<String, String> record, int attempt) throws IOException, ServiceException {
+		try {
+			writeRecord(columns, worksheet, entries, realColumns, i, record);
+		}  catch (PreconditionFailedException e) {
+			if(attempt > 0) {
+				LOG.error("Update failed on " + attempt + " attempt, repeating ", e);				
+				writeRecordWithAttempt(columns, worksheet, entries, realColumns, i, record, attempt--);
+			} else {
+				throw e;
+			}
+		}
+	}
+	
+	
+	private void writeRecord(Map<String, String> columns, WorksheetEntry worksheet, List<ListEntry> entries,
+			Map<String, String> realColumns, int i, Map<String, String> record) throws IOException, ServiceException {
+		ListEntry existEntry = getListEntry(entries, record, worksheet.getListFeedUrl(), realColumns);
+		if (null == existEntry){
+			LOG.info("Inserting record " + i);
+			ListEntry newEntry = new ListEntry();
+			applyNewData(newEntry, realColumns, columns, record);
+			service.insert(worksheet.getListFeedUrl(), newEntry);
+		} else {
+			LOG.info("Updating record " + i);
+			applyNewData(existEntry, realColumns, columns, record);
+			existEntry.setEtag("*");
+			existEntry.update();
 		}
 	}
 

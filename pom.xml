@@ -12,11 +12,12 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<!-- TODO: replace with released version -->
-		<version>1.3.0.RELEASE</version>
+		<version>1.3.1.RELEASE</version>
 	</parent>
 
 	<properties>
 		<java.version>1.8</java.version>
+		<javax-mail.version>1.5.5</javax-mail.version>
 		
 		<dist.dir>${project.build.directory}/dist</dist.dir>
 		<dist.project.id>${project.artifactId}</dist.project.id>
@@ -120,6 +121,11 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>eu.hinsch</groupId>
+			<artifactId>spring-boot-actuator-logview</artifactId>
+			<version>0.2.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

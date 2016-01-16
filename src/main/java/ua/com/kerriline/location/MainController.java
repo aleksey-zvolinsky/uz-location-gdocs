@@ -113,11 +113,30 @@ public class MainController {
 	@ResponseBody
 	String mileage() {
 		try {
+			LOG.info("Requested mileage update");
 			mileage.fullTrip();
+			LOG.info("Mileage was successfully updated");
 		} catch (Exception e) {
 			LOG.error("Failed to get mileage", e);
 			return "Failed to get mileage";
 		}
 		return "done";
+	}
+	
+	@RequestMapping("/test/mail-errors")
+	@ResponseBody
+	String mailErrors() {
+		try {
+			for(int i=0;i<1000;i++){
+				LOG.info("Info {} message", i);
+				LOG.debug("Debug {} message", i);
+				LOG.trace("Trace {} message", i);
+			}
+			LOG.error("This message should be send to mail");
+			return "done";
+		} catch (Exception e) {
+			LOG.error("Failed to make sheet", e);
+			return "failed";
+		}
 	}
 }

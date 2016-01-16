@@ -32,7 +32,7 @@ import ua.com.kerriline.location.mail.MileageParser;
 @Component
 public class MileageManager {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(LocationManager.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MileageManager.class);
 
 	private static final String REQUEST_NUMBER = "2612";
 
@@ -49,6 +49,7 @@ public class MileageManager {
 	 */
 	public void fullTrip() throws GeneralSecurityException, IOException, ServiceException{
 		int retry = 5;
+		
 		List<Tank> tanks = readTanks()
 				.stream()
 				//.limit(20)
@@ -83,6 +84,7 @@ public class MileageManager {
 		LOG.warn("Missed tanks: " + absentTanks);
 		List<Mileage> mileages = parseResponse(tanks, responses);
 		writeMileage(mileages);
+		LOG.info("Write completed");
 		File report = exportReport();
 		sendFile(report);
 	}
@@ -132,7 +134,7 @@ public class MileageManager {
 	 */
 	private void waitForResponse(int minutes) {
 		try {
-			LOG.info("Started waiting " + minutes + " minutes");
+			LOG.info("Waiting {} minutes for response", minutes);
 			Thread.sleep(minutes*60*1000);
 			LOG.info("Finished waiting");
 		} catch (InterruptedException e) {

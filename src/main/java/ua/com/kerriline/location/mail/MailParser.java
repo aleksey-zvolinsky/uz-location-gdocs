@@ -46,13 +46,13 @@ public class MailParser {
 		LOG.debug(messageBean.getBody());
 		
 		List<Map<String, String>> res = new ArrayList<Map<String, String>>();
-		
+		int processedTanks = 0;
 		try {
-			LOG.info("Preparing text");
+			LOG.info("Preparing mail text");
 			String text = prepareText(messageBean.getBody());
-			int i = 1;
+			LOG.info("Start processing tanks");
 			for(String part: SPLITTER.split(text)){
-				LOG.info("Processing " + i++ + " tank");
+				LOG.debug("Processing " + ++processedTanks + " tank");
 				String filtered = preFilter(part);
 				LOG.debug(filtered);
 				
@@ -61,6 +61,7 @@ public class MailParser {
 				filteredMap.put(UPDATE_FIELD, formatter.format(messageBean.getReceivedDate()));
 				res.add(filteredMap); 
 			}
+			LOG.info("Processed {} tanks", processedTanks);
 		} catch (IllegalArgumentException e) {
 			
 			if(e.getMessage().contains("Duplicate key")) {
@@ -71,7 +72,7 @@ public class MailParser {
 				throw e;
 			}
 		} catch (Exception e) {
-			LOG.error("Failed", e);
+			LOG.error("Failed on {} tank", processedTanks, e);
 			throw e;
 		}
 
